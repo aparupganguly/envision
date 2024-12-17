@@ -1,4 +1,3 @@
-/* eslint-disable no-prototype-builtins */
 import { type ClassValue, clsx } from "clsx";
 import qs from "qs";
 import { twMerge } from "tailwind-merge";
@@ -22,31 +21,6 @@ export const handleError = (error: unknown) => {
     throw new Error(`Unknown error: ${JSON.stringify(error)}`);
   }
 };
-
-// PLACEHOLDERLOADER - while image is transforming
-const shimmer = (w: number, h: number) => ` 
-<svg width="${w}" height="${h}" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-  <defs>
-    <linearGradient id="g">
-      <stop stop-color="#7986AC" offset="20%" />
-      <stop stop-color="#68769e" offset="50%" />
-      <stop stop-color="#7986AC" offset="70%" />
-    </linearGradient>
-  </defs>
-  <rect width="${w}" height="${h}" fill="#7986AC" />
-  <rect id="r" width="${w}" height="${h}" fill="url(#g)" />
-  <animate xlink:href="#r" attributeName="x" from="-${w}" to="${w}" dur="1s" repeatCount="indefinite"  />
-</svg>`;
-
-const toBase64 = (str: string) =>
-  typeof window === "undefined"
-    ? Buffer.from(str).toString("base64")
-    : window.btoa(str);
-
-export const dataUrl = `data:image/svg+xml;base64,${toBase64(
-  shimmer(1000, 1000)
-)}`;
-// ==== End
 
 // FORMURLQUERY
 export type FormUrlQueryParams = {
@@ -85,10 +59,6 @@ export function removeKeysFromQuery({
     delete currentUrl[key];
   });
 
-  Object.keys(currentUrl).forEach(
-    (key) => currentUrl[key] == null && delete currentUrl[key]
-  );
-
   return `${window.location.pathname}?${qs.stringify(currentUrl)}`;
 }
 
@@ -124,52 +94,22 @@ export const getImageSize = (
   return image?.[dimension] || 1000;
 };
 
-// DOWNLOADIMAGE
-export const download = (url: string, filename: string) => {
-  if (!url) {
-    throw new Error("Resource URL not provided! You need to provide one");
-  }
-
-  fetch(url)
-    .then((response) => response.blob())
-    .then((blob) => {
-      const blobURL = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = blobURL;
-
-      if (filename && filename.length)
-        a.download = `${filename.replace(" ", "_")}.png`;
-      document.body.appendChild(a);
-      a.click();
-    })
-    .catch((error) => console.log({ error }));
-};
-
 // DEEPMERGEOBJECTS
-export const deepMergeObjects = (
-  obj1: Record<string, any>,
-  obj2: Record<string, any>
-) => {
-  if (obj2 === null || obj2 === undefined) {
-    return obj1;
-  }
+export const deepMergeObjects = <T extends Record<string, unknown>>(
+  obj1: T,
+  obj2: T
+): T => {
+  if (!obj2) return obj1;
 
-  const output = { ...obj2 };
+  return Object.keys(obj1).reduce((acc, key) => {
+    const val1 = obj1[key];
+    const val2 = obj2[key];
 
-  for (const key in obj1) {
-    if (Object.prototype.hasOwnProperty.call(obj1, key)) {
-      if (
-        obj1[key] &&
-        typeof obj1[key] === "object" &&
-        obj2[key] &&
-        typeof obj2[key] === "object"
-      ) {
-        output[key] = deepMergeObjects(obj1[key], obj2[key]);
-      } else {
-        output[key] = obj1[key];
-      }
-    }
-  }
+    acc[key] =
+      typeof val1 === "object" && typeof val2 === "object"
+        ? deepMergeObjects(val1 as T, val2 as T)
+        : val1 ?? val2;
 
-  return output;
+    return acc;
+  }, { ...obj2 } as T);
 };
