@@ -1,4 +1,3 @@
-/* eslint-disable prefer-const */
 /* eslint-disable no-prototype-builtins */
 import { type ClassValue, clsx } from "clsx";
 import qs from "qs";
@@ -13,22 +12,19 @@ export function cn(...inputs: ClassValue[]) {
 // ERROR-HANDLER
 export const handleError = (error: unknown) => {
   if (error instanceof Error) {
-    // This is a native JavaScript error (e.g., TypeError, RangeError)
     console.error(error.message);
     throw new Error(`Error: ${error.message}`);
   } else if (typeof error === "string") {
-    // This is a string error message
     console.error(error);
     throw new Error(`Error: ${error}`);
   } else {
-    // This is an unknown type of error
     console.error(error);
     throw new Error(`Unknown error: ${JSON.stringify(error)}`);
   }
 };
 
-// PLACEHOLDERLOADER- while image is transforming
-const shimmer = (w: number, h: number) => `
+// PLACEHOLDERLOADER - while image is transforming
+const shimmer = (w: number, h: number) => ` 
 <svg width="${w}" height="${h}" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
   <defs>
     <linearGradient id="g">
@@ -53,11 +49,17 @@ export const dataUrl = `data:image/svg+xml;base64,${toBase64(
 // ==== End
 
 // FORMURLQUERY
+export type FormUrlQueryParams = {
+  searchParams: URLSearchParams;
+  key: string;
+  value: string;
+};
+
 export const formUrlQuery = ({
   searchParams,
   key,
   value,
-}: FormUrlQueryParams) => {
+}: FormUrlQueryParams): string => {
   const params = { ...qs.parse(searchParams.toString()), [key]: value };
 
   return `${window.location.pathname}?${qs.stringify(params, {
@@ -66,17 +68,23 @@ export const formUrlQuery = ({
 };
 
 // REMOVEKEYFROMQUERY
+export type RemoveUrlQueryParams = {
+  searchParams: URLSearchParams | string;
+  keysToRemove: string[];
+};
+
 export function removeKeysFromQuery({
   searchParams,
   keysToRemove,
-}: RemoveUrlQueryParams) {
-  const currentUrl = qs.parse(searchParams);
+}: RemoveUrlQueryParams): string {
+  const currentUrl = qs.parse(
+    typeof searchParams === "string" ? searchParams : searchParams.toString()
+  );
 
   keysToRemove.forEach((key) => {
     delete currentUrl[key];
   });
 
-  // Remove null or undefined values
   Object.keys(currentUrl).forEach(
     (key) => currentUrl[key] == null && delete currentUrl[key]
   );
@@ -85,19 +93,26 @@ export function removeKeysFromQuery({
 }
 
 // DEBOUNCE
-export const debounce = (func: (...args: any[]) => void, delay: number) => {
-  let timeoutId: NodeJS.Timeout | null;
-  return (...args: any[]) => {
+export const debounce = (func: (...args: unknown[]) => void, delay: number) => {
+  let timeoutId: ReturnType<typeof setTimeout> | null;
+  return (...args: unknown[]) => {
     if (timeoutId) clearTimeout(timeoutId);
     timeoutId = setTimeout(() => func.apply(null, args), delay);
   };
 };
 
-// GEIMAGESIZE
+// GETIMAGESIZE
 export type AspectRatioKey = keyof typeof aspectRatioOptions;
+
+export type Image = {
+  aspectRatio?: string;
+  width?: number;
+  height?: number;
+};
+
 export const getImageSize = (
   type: string,
-  image: any,
+  image: Image,
   dimension: "width" | "height"
 ): number => {
   if (type === "fill") {
@@ -131,15 +146,18 @@ export const download = (url: string, filename: string) => {
 };
 
 // DEEPMERGEOBJECTS
-export const deepMergeObjects = (obj1: any, obj2: any) => {
-  if(obj2 === null || obj2 === undefined) {
+export const deepMergeObjects = (
+  obj1: Record<string, any>,
+  obj2: Record<string, any>
+) => {
+  if (obj2 === null || obj2 === undefined) {
     return obj1;
   }
 
-  let output = { ...obj2 };
+  const output = { ...obj2 };
 
-  for (let key in obj1) {
-    if (obj1.hasOwnProperty(key)) {
+  for (const key in obj1) {
+    if (Object.prototype.hasOwnProperty.call(obj1, key)) {
       if (
         obj1[key] &&
         typeof obj1[key] === "object" &&
