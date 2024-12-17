@@ -10,7 +10,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// ERROR-HANDLER
+// ERROR HANDLER
 export const handleError = (error: unknown) => {
   if (error instanceof Error) {
     // This is a native JavaScript error (e.g., TypeError, RangeError)
@@ -52,7 +52,7 @@ export const dataUrl = `data:image/svg+xml;base64,${toBase64(
 )}`;
 // ==== End
 
-// FORMURLQUERY
+// FORM URL QUERY
 export const formUrlQuery = ({
   searchParams,
   key,
@@ -65,7 +65,7 @@ export const formUrlQuery = ({
   })}`;
 };
 
-// REMOVEKEYFROMQUERY
+// REMOVE KEY FROM QUERY
 export function removeKeysFromQuery({
   searchParams,
   keysToRemove,
@@ -84,16 +84,16 @@ export function removeKeysFromQuery({
   return `${window.location.pathname}?${qs.stringify(currentUrl)}`;
 }
 
-// DEBOUNCE (Fixed with Spread Operator)
+// DEBOUNCE
 export const debounce = (func: (...args: any[]) => void, delay: number) => {
-  let timeoutId: ReturnType<typeof setTimeout> | null;
+  let timeoutId: NodeJS.Timeout | null;
   return (...args: any[]) => {
     if (timeoutId) clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => func(...args), delay); // Fixed `.apply` to use spread operator
+    timeoutId = setTimeout(() => func.apply(null, args), delay);
   };
 };
 
-// GETIMAGESIZE
+// GE IMAGE SIZE
 export type AspectRatioKey = keyof typeof aspectRatioOptions;
 export const getImageSize = (
   type: string,
@@ -109,7 +109,7 @@ export const getImageSize = (
   return image?.[dimension] || 1000;
 };
 
-// DOWNLOADIMAGE
+// DOWNLOAD IMAGE
 export const download = (url: string, filename: string) => {
   if (!url) {
     throw new Error("Resource URL not provided! You need to provide one");
@@ -130,9 +130,9 @@ export const download = (url: string, filename: string) => {
     .catch((error) => console.log({ error }));
 };
 
-// DEEPMERGEOBJECTS
+// DEEP MERGE OBJECTS
 export const deepMergeObjects = (obj1: any, obj2: any) => {
-  if (obj2 === null || obj2 === undefined) {
+  if(obj2 === null || obj2 === undefined) {
     return obj1;
   }
 
